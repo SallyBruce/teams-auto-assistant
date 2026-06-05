@@ -1,178 +1,116 @@
 # Teams Auto-Assistant
 
-**Teams 会议全自动记录与智能退出助手** — 在 Windows + Microsoft Teams 环境下，后台实时语音转文字、悬浮字幕展示、视觉识别"只剩一人"后自动挂断，并生成 LLM 结构化会议纪要。
+**Teams Auto-Assistant** — In a Windows + Microsoft Teams environment, this tool provides background real-time Speech-to-Text, a floating subtitle display, visual recognition to automatically hang up when "only one person remains," and generates structured LLM meeting minutes.
 
 ---
 
-## 功能概览
+## Features Overview
 
-| 功能 | 说明 |
+| Feature | Description |
 |------|------|
-| **实时语音转文字 (STT)** | 会议全程后台录音，低延迟切片 + 静音检测，调用 OpenAI-compatible STT 服务实时转写 |
-| **悬浮字幕面板** | 英文玻璃拟态悬浮窗，置顶半透明；打字机效果 + 自动滚动，不遮挡主要工作区 |
-| **双音源方案** | 支持 **Stereo Mix 输入设备** 或 **WASAPI Loopback**，按环境二选一，不做混音 |
-| **低延迟音频优化** | 自动 mono + 16kHz 重采样，减少 STT 数据量与端到端延迟 |
-| **察言观色再退出** | Sprint 时间窗内截屏匹配 `only_one_person` 模板，**确认只剩自己** 才挂断，避免误触 Teams 常驻离开按钮 |
-| **智能退出动作** | 优先模板匹配点击红色离开按钮；失败则快捷键兜底（`Alt+Shift+B` / `Ctrl+Shift+H`） |
-| **LLM 会议纪要** | 会议结束后自动读取转写日志，生成 Markdown 纪要（Executive Summary / 讨论要点 / 待办事项） |
-| **强制结束** | 随时可点 **Force End & Summarize** 跳过视觉检测，手动结束并生成纪要 |
-| **会后自动关机（可选）** | 勾选后纪要保存完毕弹出 60 秒倒计时，可取消或立即关机 |
-| **OpenAI-compatible** | STT 与 LLM 均通过 `openai` SDK，改 `base_url` / `model` 即可切换硅基流动、DeepSeek 等平台 |
+| **Real-time Speech-to-Text (STT)** | Background recording throughout the entire meeting, featuring low-latency slicing and silence detection. Calls an OpenAI-compatible STT service for real-time transcription. |
+| **Floating Subtitle Panel** | English glassmorphism floating window, top-most and semi-transparent. Features a typewriter effect with auto-scrolling, ensuring it does not block the main workspace. |
+| **Dual Audio Source Solution** | Supports either **Stereo Mix input devices** or **WASAPI Loopback**. Choose one based on your environment (no audio mixing performed). |
+| **Low-Latency Audio Optimization** | Automatic mono + 16kHz resampling to reduce STT data volume and end-to-end latency. |
+| **Smart Visual Exit** | Captures screenshots within a Sprint time window to match the `only_one_person` template. **Confirms you are the only one left** before hanging up, preventing accidental clicks on the persistent Teams leave button. |
+| **Smart Exit Action** | Prioritizes template matching to click the red "Leave" button; falls back to hotkeys if visual matching fails (`Alt+Shift+B` / `Ctrl+Shift+H`). |
+| **LLM Meeting Minutes** | Automatically reads transcription logs after the meeting concludes to generate Markdown minutes (including Executive Summary / Discussion Points / Action Items). |
+| **Force End** | Click **Force End & Summarize** at any time to bypass visual detection, manually terminate the session, and generate the meeting minutes. |
+| **Auto-Shutdown After Meeting (Optional)** | When checked, a 60-second countdown pops up after the summary is saved, allowing you to cancel or immediately shut down the PC. |
+| **OpenAI-compatible** | Both STT and LLM utilize the `openai` SDK. Simply change the `base_url` / `model` to switch between platforms like SiliconFlow, DeepSeek, etc. |
 
 ---
 
-## 工作流程
+## Workflow
 
 ```mermaid
 flowchart LR
-    A[Start Meeting] --> B[音频采集线程]
-    B --> C[VAD 切片]
-    C --> D[STT 转写]
-    D --> E[悬浮字幕 + 日志文件]
-    A --> F{进入 Sprint 时间窗?}
-    F -->|是| G[视觉扫描 only_one_person]
-    G -->|匹配成功| H[点击退出 / 快捷键]
-    H --> I[LLM 生成纪要]
-    F -->|否| B
+    A[Start Meeting] --> B[Audio Capture Thread]
+    B --> C[VAD Slicing]
+    C --> D[STT Transcription]
+    D --> E[Floating Subtitles + Log File]
+    A --> F{Enter Sprint Window?}
+    F -->|Yes| G[Visual Scan only_one_person]
+    G -->|Match Success| H[Click Exit / Hotkey]
+    H --> I[LLM Generate Summary]
+    F -->|No| B
     J[Force End] --> I
-    I --> K[可选：自动关程序 / 关机倒计时]
-```
-
----
-
-## 适用场景
-
-- 跨国 IT 例会、站会、项目同步 — 需要完整转写与结构化纪要
-- 深夜/跨时区会议 — 设置 Sprint 时间窗，散会后自动退出并生成纪要，可选自动关机
-- 长时间会议 — 后台静默录音转写，悬浮窗实时查看字幕
-
----
-
-## 快速开始
-
-### 环境要求
-
-- **Windows 10/11**
-- **Python 3.10+**（建议 3.11）
-- **Microsoft Teams** 桌面客户端
-- 支持 OpenAI-compatible API 的 STT / LLM 服务（如 [硅基流动](https://siliconflow.cn/)）
-
-### 安装
-
-```bash
-git clone https://github.com/SallyBruce/teams-auto-assistant.git
+    I --> K[Optional: Close App / Shutdown Countdown]
+Applicable Scenarios
+•	Multinational IT regular meetings, stand-ups, project syncs — requires full transcription and structured summaries.
+•	Late-night / cross-timezone meetings — set the Sprint time window, automatically exit and generate the summary after the meeting concludes, with an optional auto-shutdown.
+•	Long meetings — silent background recording and transcription, view subtitles in real-time via the floating window.
+Quick Start
+Environment Requirements
+•	Windows 10/11
+•	Python 3.10+ (3.11 recommended)
+•	Microsoft Teams desktop client
+•	STT / LLM service supporting OpenAI-compatible APIs (e.g., SiliconFlow)
+Installation
+Bash
+git clone [https://github.com/SallyBruce/teams-auto-assistant.git](https://github.com/SallyBruce/teams-auto-assistant.git)
 cd teams-auto-assistant/teams_assistant
 pip install -r requirements.txt
-```
-
-### 配置 API Key（推荐方式）
-
-```bash
-# 复制示例配置，填入真实 Key
+Configure API Key (Recommended)
+Bash
+# Copy the example config and fill in your real Keys
 copy config.local.yaml.example config.local.yaml   # Windows
-# cp config.local.yaml.example config.local.yaml  # macOS/Linux（本项目主要面向 Windows）
+# cp config.local.yaml.example config.local.yaml  # macOS/Linux (Project is primarily for Windows)
 
-# 编辑 config.local.yaml，填写 stt.api_key 与 llm.api_key
+# Edit config.local.yaml and fill in stt.api_key and llm.api_key
 python main.py --config config.local.yaml
-```
-
-> `config.local.yaml` 已被 `.gitignore` 忽略，不会被提交。仓库中的 `config.yaml` 仅含占位符。
-
-### 准备视觉模板（自动退出必需）
-
-在 `teams_assistant/assets/templates/` 放置截图模板（png/jpg/jpeg）：
-
-| 文件名含 | 用途 |
-|----------|------|
-| `only_one_person` | **触发模板**：识别"会议只剩我一人"的界面状态（防误挂断关键） |
-| `exit_btn` | **退出模板**：红色离开按钮，触发后用于点击挂断 |
-
-建议在与你相同的 **DPI 缩放 / Teams 主题 / 语言** 下截取。可放多张不同分辨率模板，程序内置多尺度匹配（0.8~1.2）。
-
-### 运行
-
-```bash
+config.local.yaml is ignored by .gitignore and will not be committed. The config.yaml in the repository only contains placeholders.
+Prepare Visual Templates (Required for Auto-Exit)
+Place your screenshot templates (png/jpg/jpeg) in the teams_assistant/assets/templates/ directory:
+Filename Contains	Purpose
+only_one_person	Trigger Template: Identifies the interface state when "only I am left in the meeting" (crucial for preventing false hang-ups).
+exit_btn	Exit Template: The red leave button, used to click and hang up after the trigger.
+It is recommended to take these screenshots using your exact DPI scaling / Teams theme / language settings. You can place multiple templates with different resolutions; the program features built-in multi-scale matching (0.8~1.2).
+Run
+Bash
 cd teams_assistant
 python main.py --config config.local.yaml
-```
-
-**CLI 参数：**
-
-```bash
-python main.py --list-devices    # 列出音频输入设备（确认 device_index）
-python main.py --self-test       # 最小自测（跨日时间窗逻辑等）
-```
-
----
-
-## 界面说明
-
-启动后为英文悬浮控制面板（CustomTkinter 玻璃拟态风格）：
-
-1. **Transcript** — 实时转写字幕区
-2. **Audio Source** — 音源选择（Stereo Mix / WASAPI Loopback）
-3. **Sprint Window** — 视觉监控时间段（`HH:MM`，支持跨日如 `23:50 ~ 00:30`）
-4. **Shut down PC after summary** — 本场会议结束后是否关机
-5. **Start Meeting** — 开始录音转写
-6. **Force End & Summarize** — 强制结束并生成纪要
-
----
-
-## 输出文件
-
-每次 **Start Meeting** 会在 `teams_assistant/` 目录生成：
-
-| 文件 | 内容 |
-|------|------|
-| `meeting_log_YYYYMMDD_HHMMSS.txt` | 完整转写文本 |
-| `Meeting_Summary_YYYYMMDD_HHMMSS.md` | LLM 结构化会议纪要 |
-
----
-
-## 项目结构
-
-```
+CLI Parameters:
+Bash
+python main.py --list-devices    # List audio input devices (to confirm device_index)
+python main.py --self-test       # Minimal self-test (cross-day time window logic, etc.)
+Interface Description
+Upon launch, an English floating control panel (CustomTkinter glassmorphism style) will appear:
+1.	Transcript — Real-time transcription subtitle area
+2.	Audio Source — Audio source selection (Stereo Mix / WASAPI Loopback)
+3.	Sprint Window — Visual monitoring time period (HH:MM, supports cross-day like 23:50 ~ 00:30)
+4.	Shut down PC after summary — Whether to shut down the PC after the current meeting ends
+5.	Start Meeting — Begin recording and transcription
+6.	Force End & Summarize — Manually end the session and generate the summary
+Output Files
+Every time you Start Meeting, the following will be generated in the teams_assistant/ directory:
+File	Content
+meeting_log_YYYYMMDD_HHMMSS.txt	Complete transcription text
+Meeting_Summary_YYYYMMDD_HHMMSS.md	LLM-structured meeting minutes
+Project Structure
 teams-auto-assistant/
-├── README.md                 # 本文件（GitHub 首页）
-├── Teams Auto.md             # 详细产品/技术说明
+├── README.md                 # This file (GitHub homepage)
+├── Teams Auto.md             # Detailed product/technical documentation
 └── teams_assistant/
-    ├── main.py               # 入口
-    ├── config.yaml           # 默认配置（占位符 Key）
+    ├── main.py               # Entry point
+    ├── config.yaml           # Default config (placeholder Keys)
     ├── config.local.yaml.example
     ├── requirements.txt
-    ├── assets/templates/     # 视觉模板（需自行准备）
-    ├── core/                 # 音频 / STT / 视觉 / LLM
-    └── ui/                   # 悬浮控制面板
-```
+    ├── assets/templates/     # Visual templates (need to be prepared manually)
+    ├── core/                 # Audio / STT / Visual / LLM modules
+    └── ui/                   # Floating control panel
+For more comprehensive architecture and configuration details, please refer to Teams Auto.md and teams_assistant/README.md.
+Audio Source Selection Tips
+•	Microphone / Stereo Mix: Records via the input device; if you need to record both the remote end and your colleagues' voices simultaneously, you can enable Windows "Listen to this device" to play the microphone through the speakers (this will cause local echo, recommended to turn off after recording).
+•	WASAPI Loopback: Records pure system audio; requires PyAudio to support as_loopback, otherwise please switch to the Stereo Mix solution.
+•	Run python main.py --list-devices to confirm your audio.device_index.
+Tech Stack
+customtkinter · pyaudio · openai · pyautogui · opencv-python · pyyaml
+Multi-threading + Queue architecture. The main UI thread only polls for updates via .after() to prevent freezing and stuttering.
+Security Notes
+•	Please write your real API Keys only in config.local.yaml (which is gitignored).
+•	Do not commit local artifacts like meeting_log_*.txt, Meeting_Summary_*.md, .wav, etc.
+•	If a Key is accidentally leaked, please rotate the secret immediately in the corresponding platform's console.
+License
+MIT (Default MIT unless specified otherwise; can be modified as needed)
 
-更完整的架构与配置说明见 [Teams Auto.md](./Teams%20Auto.md) 与 [teams_assistant/README.md](./teams_assistant/README.md)。
-
----
-
-## 音源选择提示
-
-- **Microphone / Stereo Mix**：通过输入设备录音；若需同时录到远端与同事声音，可启用 Windows「监听此设备」将麦克风播放到扬声器（会有本机回音，录完建议关闭）。
-- **WASAPI Loopback**：录制纯系统内声音；需 PyAudio 支持 `as_loopback`，否则请切换 Stereo Mix 方案。
-- 运行 `python main.py --list-devices` 确认 `audio.device_index`。
-
----
-
-## 技术栈
-
-`customtkinter` · `pyaudio` · `openai` · `pyautogui` · `opencv-python` · `pyyaml`
-
-多线程 + Queue 架构，UI 主线程仅通过 `.after()` 轮询更新，避免卡顿。
-
----
-
-## 安全说明
-
-- 真实 API Key 请只写在 `config.local.yaml`（已 gitignore）
-- 勿提交 `meeting_log_*.txt`、`Meeting_Summary_*.md`、`.wav` 等本地产物
-- 若 Key 曾意外泄露，请在对应平台控制台轮换密钥
-
----
-
-## License
-
-MIT（如未另行指定，默认 MIT；可按需修改）
