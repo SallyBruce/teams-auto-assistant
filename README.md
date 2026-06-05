@@ -60,7 +60,7 @@ flowchart LR
 ### 安装
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/teams-auto-assistant.git
+git clone https://github.com/SallyBruce/teams-auto-assistant.git
 cd teams-auto-assistant/teams_assistant
 pip install -r requirements.txt
 ```
