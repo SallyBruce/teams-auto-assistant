@@ -1,0 +1,49 @@
+# 本地私密配置示例
+# 使用方法：复制本文件为 config.local.yaml，填入真实 API Key，然后运行：
+#   python main.py --config config.local.yaml
+#
+# config.local.yaml 已被 .gitignore 忽略，不会被提交到 Git。
+
+stt:
+  api_key: "YOUR_STT_API_KEY"
+  base_url: "https://api.siliconflow.cn/v1"
+  model: "FunAudioLLM/SenseVoiceSmall"
+
+llm:
+  api_key: "YOUR_LLM_API_KEY"
+  base_url: "https://api.siliconflow.cn/v1"
+  model: "deepseek-ai/DeepSeek-V3"
+
+# 以下段落可按需覆盖 config.yaml 中的默认值
+audio:
+  mode: "system_loopback"
+  device_index: 0
+  sample_rate: 48000
+  channels: 2
+  sample_width_bytes: 2
+  frame_ms: 30
+  min_segment_sec: 2.0
+  max_segment_sec: 6.0
+  vad_silence_ms: 900
+  vad_rms_threshold: 110
+
+vision:
+  templates_dir: "assets/templates"
+  threshold: 0.85
+  interval_sec: 10
+  sprint_monitoring_start: "22:50"
+  sprint_monitoring_end: "23:10"
+  multi_scale:
+    enabled: true
+    scales: [0.80, 0.90, 1.00, 1.10, 1.20]
+
+ui:
+  alpha: 0.92
+  topmost: true
+  auto_exit_after_done: true
+  auto_exit_delay_ms: 900
+  shutdown_after_done_default: false
+  shutdown_countdown_sec: 60
+  typing_chars_per_tick: 12
+  typing_tick_ms: 25
+  queue_poll_ms: 80

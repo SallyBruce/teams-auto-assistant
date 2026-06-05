@@ -1,0 +1,63 @@
+# Teams Auto-Assistant 默认配置（请按需填写/修改）
+
+# --- 语音转文字 (STT) 配置 ---
+# 说明：统一使用 openai Python SDK 调用 OpenAI-compatible 的 STT 服务。
+# 只要目标服务兼容 OpenAI API 格规范（例如部分平台的 /v1/audio/transcriptions），即可通过修改 base_url/model 进行切换。
+stt:
+  api_key: "YOUR_STT_API_KEY"
+  # 例如硅基流动: https://api.siliconflow.cn/v1
+  base_url: "https://api.siliconflow.cn/v1"
+  # 例如: FunAudioLLM/SenseVoiceSmall 或 whisper-large-v3 或 whisper-1 等
+  model: "FunAudioLLM/SenseVoiceSmall"
+
+# --- 会议纪要生成 (LLM) 配置 ---
+# 说明：统一使用 openai Python SDK 调用 OpenAI-compatible 的聊天模型接口。
+llm:
+  api_key: "YOUR_LLM_API_KEY"
+  # 例如 DeepSeek: https://api.deepseek.com
+  base_url: "https://api.siliconflow.cn/v1"
+  # 例如: deepseek-chat 或 gpt-4o 等
+  model: "deepseek-ai/DeepSeek-V3"
+
+# --- 音频采集配置 ---
+audio:
+  # 录音模式：system_loopback（系统回环）/ microphone（麦克风）
+  mode: "system_loopback"
+  # PyAudio 设备 index。建议先运行：python main.py --list-devices
+  device_index: 0
+  sample_rate: 48000
+  channels: 2
+  sample_width_bytes: 2   # 16-bit PCM
+
+  # 为了低延迟 UI 体验：使用短切片 + 简易静音检测（VAD-like）
+  frame_ms: 30            # 每次从音频流读取的帧时长（毫秒），越小越低延迟
+  min_segment_sec: 2.0   # 最短语音片段（秒），避免过碎
+  max_segment_sec: 6.0    # 最长片段（秒），即使不断说话也会强制切片
+  vad_silence_ms: 900   # 连续静音达到该时长则触发切片（毫秒）
+  vad_rms_threshold: 110 # RMS 能量阈值：越大越“严格”。不同电脑需微调
+
+# --- 视觉监控配置 ---
+vision:
+  templates_dir: "assets/templates"
+  threshold: 0.85
+  interval_sec: 10
+  # 冲刺监控时间段（仅在该时间窗内启动视觉扫描；支持跨日，如 23:50~00:30）
+  sprint_monitoring_start: "22:50"
+  sprint_monitoring_end: "23:10"
+  # 匹配支持多模板、多尺度（提升不同缩放/DPI 下的兼容性）
+  multi_scale:
+    enabled: true
+    scales: [0.80, 0.90, 1.00, 1.10, 1.20]
+
+# --- UI 配置 ---
+ui:
+  alpha: 0.92
+  topmost: true
+  auto_exit_after_done: true
+  auto_exit_delay_ms: 900
+  shutdown_after_done_default: false
+  shutdown_countdown_sec: 60
+  # “打字机”效果：每次刷新插入的字符数（越小越像实时打字，越大越快）
+  typing_chars_per_tick: 12
+  typing_tick_ms: 25
+  queue_poll_ms: 80
